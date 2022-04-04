@@ -19,11 +19,11 @@ from requests.auth import HTTPBasicAuth
 # Help menu strings
 DESCRIPTION='''Dump the playlists for a given Spotify user.'''
 HELP_O='''Output file name'''
+HELP_S='''Spotify Client Secret'''
 HELP_U='''Username for the Spotify account'''
 
 # OAuth Client Key for our "app"
 API_CLIENT_ID = "b642673a942947c4b2b5c193bf4a0df4"
-API_CLIENT_SECRET = "2ec47cef47a4434b9921447f075f1b36"
 
 # Spotify API URLs
 SPOTIFY_BASE_URL='https://api.spotify.com/v1'
@@ -216,7 +216,7 @@ class Track(object):
         return f"[Track: {self.name} by {self.artist} ({self.album})"
 
 
-def spotify_login():
+def spotify_login(secret):
     """A function to log a user into Spotify.
 
     Given a user's credentials it will create a connection to Spotify using the
@@ -224,15 +224,15 @@ def spotify_login():
 
     Parameters
     ----------
-    user : str
-        Username for logging into Spotify
+    secret : str
+        Client Secret for the developer account
     
     Returns
     -------
     OAuth2Session
         OAuth2 session object to make requests to the Spotify API
     """
-    auth = HTTPBasicAuth(API_CLIENT_ID, API_CLIENT_SECRET)
+    auth = HTTPBasicAuth(API_CLIENT_ID, secret)
     client = BackendApplicationClient(client_id=API_CLIENT_ID)
 
     # This establishes the main object that is used to make requests to the 
@@ -293,6 +293,7 @@ def spotify_get_playlists(oauth: OAuth2Session, user: str) -> list:
 def get_arguments():
     parser = argparse.ArgumentParser(DESCRIPTION)
     parser.add_argument('-o', '--output', help=HELP_O)
+    parser.add_argument('-s', '--client-secret', help=HELP_S)
     parser.add_argument('-u', '--user', help=HELP_U)
     
     return parser.parse_args()
@@ -304,7 +305,7 @@ def main():
     session = None
 
     # 1. Login to spotify using the given credentials.
-    session = spotify_login()
+    session = spotify_login(args.client_secret)
 
     if session is None:
         print(f"[!] Error acquiring Spotilist authorization token.")
